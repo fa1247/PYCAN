@@ -41,9 +41,6 @@ class VCI_CAN_OBJ(Structure):
                 ('Data', c_ubyte * 8),
                 ('Reserved', c_byte * 3)]
     def __str__(self):
-        datalist = []
-        for i in range(self.DataLen):
-            datalist.append(self.Data[i])
         return 'ID:%08X,时间戳:%X,数据长度:%X,数据:%02X %02X %02X %02X %02X %02X %02X %02X'%(self.ID,self.TimeStamp,self.DataLen,self.Data[0],self.Data[1],self.Data[2],self.Data[3],self.Data[4],self.Data[5],self.Data[6],self.Data[7])
 
 

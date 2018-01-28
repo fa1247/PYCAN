@@ -1,6 +1,9 @@
 from CANstruct import *
+import time
 
 CANdll = WinDLL("ControlCAN.dll")
+global count
+count = 0
 devtype = 3
 devindex = 0
 canindex = 0
@@ -70,7 +73,7 @@ def Readboardinfo():
 
 
 def Receive():
-    rnum = CANdll.VCI_Receive(devtype, devindex, canindex, byref(receivebuf), 50, 200)
+    rnum = CANdll.VCI_Receive(devtype, devindex, canindex, byref(receivebuf), 50, 5)
     if rnum == 0xFFFFFFFF:
         print('读取数据失败')
         CANdll.VCI_ReadErrInfo(devtype, devindex, canindex, byref(errinfo))
@@ -79,7 +82,11 @@ def Receive():
         pass
     elif rnum > 0:
         for i in range(rnum):
-            print(receivebuf[i])
+            global count
+            count += 1
+            print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),end=' ')
+            print(receivebuf[i],end=' ')
+            print('总帧数:{0}'.format(count))
     return rnum
 
 
