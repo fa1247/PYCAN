@@ -12,11 +12,12 @@ Time1 = 0x1C
 initconfig = VCI_INIT_CONFIG(0x00000000, 0xFFFFFFFF, 0, 0, Time0, Time1, 0)
 errinfo = VCI_ERR_INFO()
 receivebuf = (VCI_CAN_OBJ * 50)()
+storagebuf = (VCI_CAN_OBJ * 50)()
 sendbuf = (VCI_CAN_OBJ * 10)()
 boardinfo = VCI_BOARD_INFO()
 
 
-def Opendevice():
+def opendevice():
     respond = CANdll.VCI_OpenDevice(devtype, devindex, 0)
     if respond == 1:
         print('打开成功')
@@ -25,7 +26,7 @@ def Opendevice():
     return respond
 
 
-def Closedevice():
+def closedevice():
     respond = CANdll.VCI_CloseDevice(devtype, devindex)
     if respond == 1:
         print('关闭成功')
@@ -34,7 +35,7 @@ def Closedevice():
     return respond
 
 
-def Initcan():
+def initcan():
     CANdll.VCI_InitCAN.argtypes = [DWORD, DWORD, DWORD, POINTER(VCI_INIT_CONFIG)]
     CANdll.VCI_InitCAN.restype = c_int
     respond = CANdll.VCI_InitCAN(devtype, devindex, canindex, byref(initconfig))
@@ -45,7 +46,7 @@ def Initcan():
     return respond
 
 
-def Startcan():
+def startcan():
     respond = CANdll.VCI_StartCAN(devtype, devindex, canindex)
     if respond == 1:
         print('启动成功')
@@ -54,7 +55,7 @@ def Startcan():
     return respond
 
 
-def Resetcan():
+def resetcan():
     respond = CANdll.VCI_ResetCAN(devtype, devindex, canindex)
     if respond == 1:
         print('复位成功')
@@ -63,7 +64,7 @@ def Resetcan():
     return respond
 
 
-def Readboardinfo():
+def readboardinfo():
     respond = CANdll.VCI_ReadBoardInfo(devtype, devindex, byref(boardinfo))
     if respond == 1:
         print('获取设备信息成功')
@@ -72,7 +73,7 @@ def Readboardinfo():
     return respond
 
 
-def Receive():
+def receive():
     rnum = CANdll.VCI_Receive(devtype, devindex, canindex, byref(receivebuf), 50, 5)
     if rnum == 0xFFFFFFFF:
         print('读取数据失败')
@@ -90,7 +91,7 @@ def Receive():
     return rnum
 
 
-def Transmit():
+def transmit():
     respond = CANdll.VCI_Transmit(devtype, devindex, canindex, byref(sendbuf), 1)
     if respond == 1:
         print('发送成功')
@@ -99,7 +100,7 @@ def Transmit():
     return respond
 
 
-def Readerrinfo():
+def readerrinfo():
     respond = CANdll.VCI_ReadErrInfo(devtype, devindex, canindex, byref(errinfo))
     if respond == 1:
         print('读取错误成功')
@@ -108,12 +109,12 @@ def Readerrinfo():
     return respond
 
 
-def Getreceivenum():
+def getreceivenum():
     respond = CANdll.VCI_GetReceiveNum(devtype, devindex, canindex)
     return respond
 
 
-def Setreference():
+def setreference():
     pData = DWORD(0x1C0008)
     respond = CANdll.VCI_SetReference(devtype, devindex, canindex, 0, byref(pData))
     if respond == 1:
