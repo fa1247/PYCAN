@@ -28,10 +28,7 @@ def kbq():
         return 0
 
 
-def debug():
-    for f, t in Req._fields_:
-        a = getattr(VCI_INIT_CONFIG, f)
-        print(a)
+def inputpara():
 
     a = input("设备型号：1.USBCAN1(默认);2.USBCAN2;3.USBCAN2E-U;请输入:")
     if a == 1:
