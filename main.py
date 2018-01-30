@@ -1,57 +1,45 @@
 from ControlCAN import *
+from Storage import *
 from multiprocessing import Process
-import pymysql
+import msvcrt
 
 
 def main():
-    num = 1
-    sql = SrorageToSQL()
-    sql.storage(num)
-    sql.disconnect()
+    sql = StorageToSQL()
+    can = ControlCAN()
+    can.opendevice()
+    can.initcan()
+    can.startcan()
+    while 1:
+        if kbfunc(): break
+        num = can.receive()
+        sql.copy(num, can.receivebuf)
+        sql.storage(num)
+    del can
+    del sql
 
 
-def main2():
-    opendevice()
-    initcan()
-    startcan()
-    num = receive()
-    closedevice()
-
-
-class SrorageToSQL:
-
-    def __init__(self):
-        self.db = pymysql.connect("localhost", "root", "fanxinyuan", "candata")
-        self.cursor = self.db.cursor()
-
-    def storage(self, n):
-        for i in range(n):
-            storagebuf[i] = receivebuf[i]
-        for i in range(n):
-            sql = "INSERT INTO %s(ID,TimeStamp,DataLen,Data0,Data1,Data2,Data3,Data4,Data5,Data6,Data7)\
-                                  VALUES('%d','%d','%d','%d','%d','%d','%d','%d','%d','%d','%d')" % \
-                  ('originaldata',
-                   storagebuf[i].ID,
-                   storagebuf[i].TimeStamp,
-                   storagebuf[i].DataLen,
-                   storagebuf[i].Data[0],
-                   storagebuf[i].Data[1],
-                   storagebuf[i].Data[2],
-                   storagebuf[i].Data[3],
-                   storagebuf[i].Data[4],
-                   storagebuf[i].Data[5],
-                   storagebuf[i].Data[6],
-                   storagebuf[i].Data[7])
-            self.cursor.execute(sql)
-        self.db.commit()
-
-    def disconnect(self):
-        self.db.close()
+def kbfunc():
+    if msvcrt.kbhit():
+        ret = ord(msvcrt.getch())
+        if ret == 113 or ret == 81:
+            return 1
+    else:
+        return 0
 
 
 def debug():
     for f, t in Req._fields_:
         a = getattr(VCI_INIT_CONFIG, f)
+        print(a)
+
+    a = input("设备型号：1.USBCAN1(默认);2.USBCAN2;3.USBCAN2E-U;请输入:")
+    if a == 1:
+        devicetype = 3
+    elif a == 2:
+        devicetype = 4
+    elif a == '':
+        print(type(a))
         print(a)
 
 
