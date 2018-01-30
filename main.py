@@ -14,7 +14,7 @@ def main():
         if kbq(): break
         num = can.receive()
         sql.copy(num, can.receivebuf)
-        # sql.storage(num)
+        sql.storage(num)
     del can
     del sql
 
