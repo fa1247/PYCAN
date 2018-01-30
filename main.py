@@ -11,18 +11,18 @@ def main():
     can.initcan()
     can.startcan()
     while 1:
-        if kbfunc(): break
+        if kbq(): break
         num = can.receive()
         sql.copy(num, can.receivebuf)
-        sql.storage(num)
+        # sql.storage(num)
     del can
     del sql
 
 
-def kbfunc():
+def kbq():
     if msvcrt.kbhit():
         ret = ord(msvcrt.getch())
-        if ret == 113 or ret == 81:
+        if ret == 113 or ret == 81:  # q or Q
             return 1
     else:
         return 0

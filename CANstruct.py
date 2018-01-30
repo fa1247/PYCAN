@@ -29,8 +29,8 @@ class VCI_BOARD_INFO(Structure):
 
     def __str__(self):
         return '硬件版本号：%s,固件版本号：%s,驱动程序版本号：%s,接口库版本号：%s,中断号：%s,共有%s路CAN，序列号：%s,硬件类型：%s' % (
-        self.hw_Version, self.fw_Version, self.dr_Version, self.in_Version, self.irq_Num, self.can_Num,
-        self.str_Serial_Num, self.str_hw_Type)
+            self.hw_Version, self.fw_Version, self.dr_Version, self.in_Version, self.irq_Num, self.can_Num,
+            self.str_Serial_Num, self.str_hw_Type)
 
 
 class VCI_CAN_OBJ(Structure):
@@ -47,11 +47,11 @@ class VCI_CAN_OBJ(Structure):
 
     def __str__(self):
         VCI_CAN_OBJ.count = VCI_CAN_OBJ.count + 1
-        Voltage = (self.Data[0] * 256 + self.Data[1]) / 10000
-        Current = (self.Data[2] * 256 + self.Data[3]) / 10000
-        return 'ID:%08X,时间戳:%X,数据长度:%X,数据:%02X %02X %02X %02X %02X %02X %02X %02X,计数:%d,电压:%.4f,电流:%.4f' % (
-        self.ID, self.TimeStamp, self.DataLen, self.Data[0], self.Data[1], self.Data[2], self.Data[3], self.Data[4],
-        self.Data[5], self.Data[6], self.Data[7], VCI_CAN_OBJ.count, Voltage, Current)
+        voltage = (self.Data[0] * 256 + self.Data[1]) / 10000
+        current = (self.Data[2] * 256 + self.Data[3]) / 10000
+        return 'ID:%08X,时间戳:%X,数据长度:%X,数据:%02X %02X %02X %02X %02X %02X %02X %02Xd,电压:%.4f,电流:%.4f,计数:%d' % (
+            self.ID, self.TimeStamp, self.DataLen, self.Data[0], self.Data[1], self.Data[2], self.Data[3], self.Data[4],
+            self.Data[5], self.Data[6], self.Data[7], voltage, current, VCI_CAN_OBJ.count)
 
 
 class VCI_CAN_STATUS(Structure):
