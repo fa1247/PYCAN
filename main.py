@@ -1,11 +1,17 @@
 from ControlCAN import *
 from Storage import *
-from multiprocessing import Process
 import msvcrt
 
 
 def main():
+    sql=StorageToSQL()
+    sql.createtable()
+    del sql
+
+
+def main2():
     sql = StorageToSQL()
+    sql.createtable()
     can = ControlCAN()
     can.opendevice()
     can.initcan()
@@ -13,7 +19,7 @@ def main():
     while 1:
         if kbq(): break
         num = can.receive()
-        sql.copy(num, can.receivebuf)
+        sql.copy(can.receivebuf)
         sql.storage(num)
     del can
     del sql
