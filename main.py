@@ -2,10 +2,18 @@ from ControlCAN import *
 from Storage import *
 import msvcrt
 
-
 def main():
     sql=StorageToSQL()
     sql.createtable()
+    start=time.clock()
+    i = 0
+    while i<1000:
+        sql.storage(3)
+        i = i+1
+        print(i)
+    sql.commit()
+    stop =time.clock()
+    print(stop-start)
     del sql
 
 
@@ -21,6 +29,7 @@ def main2():
         num = can.receive()
         sql.copy(can.receivebuf)
         sql.storage(num)
+        sql.commit()
     del can
     del sql
 

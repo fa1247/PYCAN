@@ -5,7 +5,8 @@ from CANstruct import *
 class StorageToSQL:
 
     def __init__(self, username='root', password='fanxinyuan', schema='candata', table='originaldata'):
-        self.schema=schema
+        self.datanum = 0
+        self.schema = schema
         self.table = table
         self.db = pymysql.connect("localhost", username, password, schema)
         self.cursor = self.db.cursor()
@@ -13,7 +14,7 @@ class StorageToSQL:
         print('连接数据库成功')
 
     def createtable(self):
-        sql="DROP TABLE IF EXISTS %s"%(self.table)
+        sql = "DROP TABLE IF EXISTS %s" % (self.table)
         self.cursor.execute(sql)
         sql = "CREATE TABLE `%s`.`%s` (\
             `INDEX` INT UNSIGNED NOT NULL AUTO_INCREMENT,\
@@ -28,7 +29,7 @@ class StorageToSQL:
             `Data5` TINYINT(8) UNSIGNED NOT NULL DEFAULT 0,\
             `Data6` TINYINT(8) UNSIGNED NOT NULL DEFAULT 0,\
             `Data7` TINYINT(8) UNSIGNED NOT NULL DEFAULT 0,\
-            PRIMARY KEY (`INDEX`));"%(self.schema,self.table)
+            PRIMARY KEY (`INDEX`));" % (self.schema, self.table)
         self.cursor.execute(sql)
         print('创建表格成功')
 
@@ -36,6 +37,7 @@ class StorageToSQL:
         self.storagebuf = obj
 
     def storage(self, n):
+        self.datanum = self.datanum + n
         for i in range(n):
             sql = "INSERT INTO %s(ID,TimeStamp,DataLen,Data0,Data1,Data2,Data3,Data4,Data5,Data6,Data7)\
                                   VALUES('%d','%d','%d','%d','%d','%d','%d','%d','%d','%d','%d')" % \
@@ -52,7 +54,12 @@ class StorageToSQL:
                    self.storagebuf[i].Data[6],
                    self.storagebuf[i].Data[7])
             self.cursor.execute(sql)
-        self.db.commit()
+        #self.db.commit()
+
+    def commit(self):
+        if  self.datanum>1000:
+            self.db.commit()
+            self.datanum = 0
 
     def __del__(self):
         self.db.close()
