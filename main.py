@@ -2,25 +2,12 @@ from ControlCAN import *
 from Storage import *
 import msvcrt
 
+
+
 def main():
-    sql=StorageToSQL()
-    sql.createtable()
-    start=time.clock()
-    i = 0
-    while i<1000:
-        sql.storage(3)
-        i = i+1
-        print(i)
-    sql.commit()
-    stop =time.clock()
-    print(stop-start)
-    del sql
-
-
-def main2():
     sql = StorageToSQL()
     sql.createtable()
-    can = ControlCAN()
+    can = ControlCAN(devtype=17)
     can.opendevice()
     can.initcan()
     can.startcan()
@@ -44,7 +31,6 @@ def kbq():
 
 
 def inputpara():
-
     a = input("设备型号：1.USBCAN1(默认);2.USBCAN2;3.USBCAN2E-U;请输入:")
     if a == 1:
         devicetype = 3

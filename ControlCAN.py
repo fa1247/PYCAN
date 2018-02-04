@@ -1,5 +1,6 @@
 from CANstruct import *
 import time
+import sys
 
 
 class ControlCAN:
@@ -15,12 +16,14 @@ class ControlCAN:
         self.acccode = acccode
         self.accmask = accmask
         self.initconfig = VCI_INIT_CONFIG(self.acccode, self.accmask, 0, 0, self.time0, self.time1, 0)
-        self.pData = DWORD(0x1C0008)
+        self.pData = DWORD(0x1c0008)
         self.errinfo = VCI_ERR_INFO()
         self.boardinfo = VCI_BOARD_INFO()
         self.receivebuf = (VCI_CAN_OBJ * 50)()
         self.sendbuf = VCI_CAN_OBJ()
         self.ctime = time.localtime()
+        self.emptynum = 0
+
 
     def opendevice(self):
         respond = self.CANdll.VCI_OpenDevice(self.devtype, self.devindex, 0)
@@ -31,6 +34,8 @@ class ControlCAN:
         return respond
 
     def initcan(self):
+        if self.devtype == 21:
+            self.CANdll.VCI_SetReference(self.devtype, self.devindex, self.canindex, 0, byref(self.pData))
         respond = self.CANdll.VCI_InitCAN(self.devtype, self.devindex, self.canindex, byref(self.initconfig))
         if respond:
             print('初始化成功')
@@ -63,23 +68,33 @@ class ControlCAN:
         return respond
 
     def receive(self):
-        respond = self.CANdll.VCI_Receive(self.devtype, self.devindex, self.canindex, byref(self.receivebuf), 50, 5)
+        respond = self.CANdll.VCI_Receive(self.devtype, self.devindex, self.canindex, byref(self.receivebuf), 50, 10)
         if respond == 0xFFFFFFFF:
             print('读取数据失败')
             self.CANdll.VCI_ReadErrInfo(self.devtype, self.devindex, self.canindex, byref(self.errinfo))
         elif respond == 0:
-            print('无新数据')
-            pass
+            if self.devtype == 3 or self.devtype == 4:
+                self.emptynum = self.emptynum + 1
+                temp = self.emptynum // 20
+                sys.stdout.write('\r' + "无新数据" + "." * temp)
+                sys.stdout.flush()
         elif respond > 0:
-            '''
-            for i in range(respond):
-                print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), end=' ')
-                print(self.receivebuf[i])
-           '''
+            if self.devtype == 21:
+                for i in range(respond):
+                    for j in range(self.receivebuf[i].DataLen, 8):
+                        self.receivebuf[i].Data[j] = 0
+
             if self.ctime != time.localtime():
                 self.ctime = time.localtime()
                 print(time.strftime("%Y-%m-%d %H:%M:%S", self.ctime), end=' ')
                 print(self.receivebuf[0])
+                self.emptynum = 0
+
+                # f=open('pytxt.txt','a')
+                # word = "%s %d\n"%(time.strftime("%Y-%m-%d %H:%M:%S", self.ctime),self.receivebuf[0].TimeStamp)
+                # f.write(word)
+                # f.close()
+
         return respond
 
     def transmit(self):
@@ -109,9 +124,6 @@ class ControlCAN:
     def getreceivenum(self):
         respond = self.CANdll.VCI_GetReceiveNum(self.devtype, self.devindex, self.canindex)
         return respond
-
-    def getbuf(self, n):
-        return self.receivebuf[n]
 
     def __del__(self):
         respond = self.CANdll.VCI_CloseDevice(self.devtype, self.devindex)

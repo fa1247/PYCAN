@@ -4,8 +4,9 @@ from CANstruct import *
 
 class StorageToSQL:
 
-    def __init__(self, username='root', password='fanxinyuan', schema='candata', table='originaldata'):
+    def __init__(self, username='root', password='fanxinyuan', schema='candata', table='originaldata', buffersize=1000):
         self.datanum = 0
+        self.buffersize = buffersize
         self.schema = schema
         self.table = table
         self.db = pymysql.connect("localhost", username, password, schema)
@@ -14,10 +15,11 @@ class StorageToSQL:
         print('连接数据库成功')
 
     def createtable(self):
-        sql = "DROP TABLE IF EXISTS %s" % (self.table)
+        sql = "DROP TABLE IF EXISTS %s" % self.table
         self.cursor.execute(sql)
         sql = "CREATE TABLE `%s`.`%s` (\
             `INDEX` INT UNSIGNED NOT NULL AUTO_INCREMENT,\
+            `RealTime` TIMESTAMP(6) NOT NULL,\
             `ID` INT UNSIGNED NOT NULL DEFAULT 0,\
             `TimeStamp` INT UNSIGNED NOT NULL DEFAULT 0,\
             `DataLen` TINYINT(8) UNSIGNED NOT NULL DEFAULT 0,\
@@ -54,10 +56,9 @@ class StorageToSQL:
                    self.storagebuf[i].Data[6],
                    self.storagebuf[i].Data[7])
             self.cursor.execute(sql)
-        #self.db.commit()
 
     def commit(self):
-        if  self.datanum>1000:
+        if self.datanum > self.buffersize:
             self.db.commit()
             self.datanum = 0
 
