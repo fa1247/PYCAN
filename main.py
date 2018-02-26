@@ -30,9 +30,9 @@ def main():
     can.startcan()
     while 1:
         if kbq(): break
-        num = can.receive()
-        sql.copy(can.receivebuf)
-        sql.storage(num)
+        can.receive()
+        sql.copy(can.receivebuf, can.receivenum, can.timeinterval)
+        sql.storage()
         sql.commit()
     del can
     del sql
@@ -43,8 +43,6 @@ def kbq():
         ret = ord(msvcrt.getch())
         if ret == 113 or ret == 81:  # q or Q
             return 1
-    else:
-        return 0
 
 
 if __name__ == "__main__":

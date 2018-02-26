@@ -1,14 +1,15 @@
 from CANstruct import *
 import time
+import datetime
 import sys
 
 
 class ControlCAN:
 
-    def __init__(self, devtype=3, devindex=0, canindex=0, baudrate=250, acccode=0x00000000,accmask=0xFFFFFFFF):
-        time0={100:0x04,125:0x03,250:0x01,500:0x00,1000:0x00}
-        time1={100:0x1C,125:0x1C,250:0x1C,500:0x1C,1000:0x14}
-        pData={100:0x160023,125:0x1C0011,250:0x1C0008,500:0x060007,1000:0x060003}
+    def __init__(self, devtype=3, devindex=0, canindex=0, baudrate=250, acccode=0x00000000, accmask=0xFFFFFFFF):
+        time0 = {100: 0x04, 125: 0x03, 250: 0x01, 500: 0x00, 1000: 0x00}
+        time1 = {100: 0x1C, 125: 0x1C, 250: 0x1C, 500: 0x1C, 1000: 0x14}
+        pData = {100: 0x160023, 125: 0x1C0011, 250: 0x1C0008, 500: 0x060007, 1000: 0x060003}
         self.CANdll = WinDLL("ControlCAN.dll")
         self.devtype = devtype
         self.devindex = devindex
@@ -27,7 +28,10 @@ class ControlCAN:
         self.sendbuf = VCI_CAN_OBJ()
         self.ctime = time.localtime()
         self.emptynum = 0
-
+        self.receivenum = 0
+        self.lasttime = 0
+        self.timeinterval = 0
+        # TODO 添加两次数据接收的时间差数据，送入sql
 
     def opendevice(self):
         respond = self.CANdll.VCI_OpenDevice(self.devtype, self.devindex, 0)
@@ -83,6 +87,14 @@ class ControlCAN:
                 sys.stdout.write('\r' + "无新数据" + "." * temp)
                 sys.stdout.flush()
         elif respond > 0:
+            now = datetime.datetime.now()
+            interval = (now - self.lasttime).total_seconds()
+            self.lasttime = now
+            if interval > 1:
+                self.timeinterval = 0
+            else:
+                self.timeinterval = interval
+
             if self.devtype == 21:
                 for i in range(respond):
                     for j in range(self.receivebuf[i].DataLen, 8):
@@ -98,8 +110,7 @@ class ControlCAN:
                 # word = "%s %d\n"%(time.strftime("%Y-%m-%d %H:%M:%S", self.ctime),self.receivebuf[0].TimeStamp)
                 # f.write(word)
                 # f.close()
-
-        return respond
+        self.receivenum = respond
 
     def transmit(self):
         respond = self.CANdll.VCI_Transmit(self.devtype, self.devindex, self.canindex, byref(self.sendbuf), 1)
