@@ -65,7 +65,7 @@ class StorageToSQL:
         if self.receivenum:
             integral = 0
             for i in range(self.receivenum):
-                integral = integral + (self.receivebuf[i].Data[0] * 256 + self.receivebuf[i].Data[1]) / 10000
+                integral = integral + (self.storagebuf[i].Data[0] * 256 + self.storagebuf[i].Data[1]) / 10000
             integral = integral * self.timeinterval / self.receivenum
             self.ah = self.ah + integral / 3600
 
@@ -86,10 +86,10 @@ class StorageToSQL:
                        self.storagebuf[i].Data[6],
                        self.storagebuf[i].Data[7])
                 self.cursor.execute(sql)
-                v0 = (self.receivebuf[i].Data[0] * 256 + self.receivebuf[i].Data[1]) / 10000
-                v1 = (self.receivebuf[i].Data[0] * 256 + self.receivebuf[i].Data[1]) / 10000
-                v2 = (self.receivebuf[i].Data[0] * 256 + self.receivebuf[i].Data[1]) / 10000
-                v3 = (self.receivebuf[i].Data[0] * 256 + self.receivebuf[i].Data[1]) / 10000
+                v0 = (self.storagebuf[i].Data[0] * 256 + self.storagebuf[i].Data[1]) / 10000
+                v1 = (self.storagebuf[i].Data[0] * 256 + self.storagebuf[i].Data[1]) / 10000
+                v2 = (self.storagebuf[i].Data[0] * 256 + self.storagebuf[i].Data[1]) / 10000
+                v3 = (self.storagebuf[i].Data[0] * 256 + self.storagebuf[i].Data[1]) / 10000
                 sql = "INSERT INTO %s(V0,V1,V2,V3,Ah)\
                     VALUES('%f','%f','%f','%f','%f')" % \
                       (self.ttable, v0, v1, v2, v3, self.ah)
