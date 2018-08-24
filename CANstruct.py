@@ -93,3 +93,26 @@ class VCI_FILTER_RECORD(Structure):
     _fields_ = [('ExtFrame', DWORD),
                 ('Start', DWORD),
                 ('End', DWORD)]
+
+class VCI_AUTO_SEND_OBJ(Structure):
+    _fields_ = [('Enable', c_byte),
+                ('Index', c_byte),
+                ('Interval', DWORD),
+                ('Obj', VCI_CAN_OBJ)]
+
+class VCI_INDICATE_LIGHT(Structure):
+    _fields_ = [('Indicate', c_byte),
+                ('AttribRedMode', c_byte, 2),
+                ('AttribGreenMode', c_byte, 2),
+                ('AttribReserved', c_byte, 4),
+                ('FrequenceRed', c_byte, 2),
+                ('FrequenceGreen', c_byte, 2),
+                ('FrequenceReserved', c_byte, 4)]
+
+class VCI_CAN_OJB_REDIRECT(Structure):
+    _fields_ = [('Action', c_byte),
+                ('DestCanIndex', c_byte)]
+
+class DTUCOMCONFIG(Structure):
+    _fields_ = [('dwLen', DWORD),
+                ('pData', POINTER(c_byte))]
