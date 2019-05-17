@@ -34,7 +34,6 @@ class VCI_BOARD_INFO(Structure):
 
 
 class VCI_CAN_OBJ(Structure):
-    count = 0
     _fields_ = [('ID', c_uint),
                 ("TimeStamp", c_uint),
                 ("TimeFlag", c_byte),
@@ -46,12 +45,18 @@ class VCI_CAN_OBJ(Structure):
                 ('Reserved', c_byte * 3)]
 
     def __str__(self):
-        VCI_CAN_OBJ.count = VCI_CAN_OBJ.count + 1
-        voltage = (self.Data[0] * 256 + self.Data[1]) / 10000
-        current = (self.Data[2] * 256 + self.Data[3]) / 10000
-        return 'ID:%08X,时间戳:%X,长度:%X,数据:%02X %02X %02X %02X %02X %02X %02X %02X,电压:%.4f,电流:%.4f,计数:%d' % (
-            self.ID, self.TimeStamp, self.DataLen, self.Data[0], self.Data[1], self.Data[2], self.Data[3], self.Data[4],
-            self.Data[5], self.Data[6], self.Data[7], voltage, current, VCI_CAN_OBJ.count)
+        datastr = ''
+        for i in range(self.DataLen):
+            datastr += format(self.Data[i],'02X')+" "
+        return 'ID:%08X,时间戳:%X,长度:%X,数据:%s'%(self.ID, self.TimeStamp, self.DataLen, datastr)
+
+    def getdata(self):
+        return [self.Data[i] for i in range(self.DataLen)]
+    
+    def setdata(self,datalist):
+        self.DataLen = len(datalist)
+        for i in range(self.DataLen):
+            self.Data[i] = datalist[i]
 
 
 class VCI_CAN_STATUS(Structure):

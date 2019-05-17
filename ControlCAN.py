@@ -87,29 +87,14 @@ class ControlCAN:
                 sys.stdout.write('\r' + "无新数据" + "." * temp)
                 sys.stdout.flush()
         elif respond > 0:
-            now = datetime.datetime.now()
-            interval = (now - self.lasttime).total_seconds()
-            self.lasttime = now
-            if interval > 1:
-                self.timeinterval = 0
-            else:
-                self.timeinterval = interval
-
+            # USBCAN-(2)E-U设计问题(特性？)无数据的Data位会保持之前的数据，不会置0
             if self.devtype == 21:
                 for i in range(respond):
                     for j in range(self.receivebuf[i].DataLen, 8):
                         self.receivebuf[i].Data[j] = 0
+            # 写入自己的代码 处理接受到的CAN数据
 
-            if self.ctime != time.localtime():
-                self.ctime = time.localtime()
-                print(time.strftime("%Y-%m-%d %H:%M:%S", self.ctime), end=' ')
-                print(self.receivebuf[0])
-                self.emptynum = 0
-
-                # f=open('pytxt.txt','a')
-                # word = "%s %d\n"%(time.strftime("%Y-%m-%d %H:%M:%S", self.ctime),self.receivebuf[0].TimeStamp)
-                # f.write(word)
-                # f.close()
+            
         self.receivenum = respond
 
     def transmit(self):
