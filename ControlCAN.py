@@ -4,6 +4,17 @@ import datetime
 import sys
 
 
+def issucceed(func_name):
+    def deco(func):
+        def wrapper(self,*args):
+            if func(self,*args):
+                print(func_name+"成功")
+            else:
+                print(func_name+"失败")
+        return wrapper
+    return deco
+
+
 class ControlCAN:
 
     def __init__(self, devtype=3, devindex=0, canindex=0, baudrate=250, acccode=0x00000000, accmask=0xFFFFFFFF):
@@ -25,110 +36,67 @@ class ControlCAN:
         self.errinfo = VCI_ERR_INFO()
         self.boardinfo = VCI_BOARD_INFO()
         self.receivebuf = (VCI_CAN_OBJ * 50)()
-        self.sendbuf = VCI_CAN_OBJ()
-        self.ctime = time.localtime()
+        self.sendbuf = (VCI_CAN_OBJ * 50)()
         self.emptynum = 0
-        self.receivenum = 0
-        self.lasttime = 0
-        self.timeinterval = 0
-        # TODO 添加两次数据接收的时间差数据，送入sql
 
+
+    @issucceed("打开CAN卡")
     def opendevice(self):
-        respond = self.CANdll.VCI_OpenDevice(self.devtype, self.devindex, 0)
-        if respond:
-            print('打开CAN卡成功')
-        else:
-            print('打开CAN卡失败')
-        return respond
+        return self.CANdll.VCI_OpenDevice(self.devtype, self.devindex, 0)
 
+    @issucceed("初始化CAN卡")
     def initcan(self):
         if self.devtype == 21:
             self.CANdll.VCI_SetReference(self.devtype, self.devindex, self.canindex, 0, byref(self.pData))
-        respond = self.CANdll.VCI_InitCAN(self.devtype, self.devindex, self.canindex, byref(self.initconfig))
-        if respond:
-            print('初始化CAN卡成功')
-        else:
-            print('初始化CAN卡失败')
-        return respond
+        return self.CANdll.VCI_InitCAN(self.devtype, self.devindex, self.canindex, byref(self.initconfig))
 
+    @issucceed("启动CAN卡")
     def startcan(self):
-        respond = self.CANdll.VCI_StartCAN(self.devtype, self.devindex, self.canindex)
-        if respond:
-            print('启动CAN卡成功')
-        else:
-            print('启动CAN卡失败')
-        return respond
+        return self.CANdll.VCI_StartCAN(self.devtype, self.devindex, self.canindex)
 
+    @issucceed("复位CAN卡")
     def resetcan(self):
-        respond = self.CANdll.VCI_ResetCAN(self.devtype, self.devindex, self.canindex)
-        if respond:
-            print('复位CAN卡成功')
-        else:
-            print('复位CAN卡失败')
-        return respond
+        return self.CANdll.VCI_ResetCAN(self.devtype, self.devindex, self.canindex)
 
+    @issucceed("获取设备信息")
     def readboardinfo(self):
-        respond = self.CANdll.VCI_ReadBoardInfo(self.devtype, self.devindex, byref(self.boardinfo))
-        if respond:
-            print('获取设备信息成功')
-        else:
-            print('获取设备信息失败')
-        return respond
+        return self.CANdll.VCI_ReadBoardInfo(self.devtype, self.devindex, byref(self.boardinfo))
+
+    # 以下两个函数不加修饰器因为要重复调用，减少不必少输出
+
+    def getreceivenum(self):
+        return self.CANdll.VCI_GetReceiveNum(self.devtype, self.devindex, self.canindex)
 
     def receive(self):
         respond = self.CANdll.VCI_Receive(self.devtype, self.devindex, self.canindex, byref(self.receivebuf), 50, 10)
         if respond == 0xFFFFFFFF:
-            print('读取数据失败')
+            print("读取数据失败")
             self.CANdll.VCI_ReadErrInfo(self.devtype, self.devindex, self.canindex, byref(self.errinfo))
         elif respond == 0:
-            if self.devtype == 3 or self.devtype == 4:
-                self.emptynum = self.emptynum + 1
-                temp = self.emptynum // 20
-                sys.stdout.write('\r' + "无新数据" + "." * temp)
-                sys.stdout.flush()
+            pass
+            # print("无新数据")
+            # if self.devtype == 3 or self.devtype == 4:
+            #     self.emptynum = self.emptynum + 1
+            #     temp = self.emptynum // 20
+            #     sys.stdout.write('\r' + "无新数据" + "." * temp)
+            #     sys.stdout.flush()
         elif respond > 0:
-            # USBCAN-(2)E-U设计问题(特性？)无数据的Data位会保持之前的数据，不会置0
-            if self.devtype == 21:
-                for i in range(respond):
-                    for j in range(self.receivebuf[i].DataLen, 8):
-                        self.receivebuf[i].Data[j] = 0
-            # 写入自己的代码 处理接受到的CAN数据
-
-            
-        self.receivenum = respond
-
-    def transmit(self):
-        respond = self.CANdll.VCI_Transmit(self.devtype, self.devindex, self.canindex, byref(self.sendbuf), 1)
-        if respond == 1:
-            print('发送CAN帧成功')
-        else:
-            print('发送CAN帧失败')
+            pass
+            # 写入自己的代码 处理接收到的CAN数据
         return respond
 
+    @issucceed("发送CAN帧")
+    def transmit(self,frame_num=1):
+        return self.CANdll.VCI_Transmit(self.devtype, self.devindex, self.canindex, byref(self.sendbuf), frame_num)
+
+    @issucceed("读取错误")
     def readerrinfo(self):
-        respond = self.CANdll.VCI_ReadErrInfo(self.devtype, self.devindex, self.canindex, byref(self.errinfo))
-        if respond:
-            print('读取错误成功')
-        else:
-            print('读取错误失败')
-        return respond
+        return self.CANdll.VCI_ReadErrInfo(self.devtype, self.devindex, self.canindex, byref(self.errinfo))
 
+    @issucceed("设定E-U波特率")
     def setreference(self):
-        respond = self.CANdll.VCI_SetReference(self.devtype, self.devindex, self.canindex, 0, byref(self.pData))
-        if respond:
-            print('设定E-U波特率成功')
-        else:
-            print('设定E-U波特率失败')
-        return respond
+        return self.CANdll.VCI_SetReference(self.devtype, self.devindex, self.canindex, 0, byref(self.pData))
 
-    def getreceivenum(self):
-        respond = self.CANdll.VCI_GetReceiveNum(self.devtype, self.devindex, self.canindex)
-        return respond
-
+    @issucceed("关闭CAN卡")
     def __del__(self):
-        respond = self.CANdll.VCI_CloseDevice(self.devtype, self.devindex)
-        if respond:
-            print('关闭CAN卡成功')
-        else:
-            print('关闭CAN卡失败')
-        return respond
+        return self.CANdll.VCI_CloseDevice(self.devtype, self.devindex)
