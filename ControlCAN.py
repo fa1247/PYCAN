@@ -62,7 +62,7 @@ class ControlCAN:
     def readboardinfo(self):
         return self.CANdll.VCI_ReadBoardInfo(self.devtype, self.devindex, byref(self.boardinfo))
 
-    # 以下两个函数不加修饰器因为要重复调用，减少不必少输出
+    # 以下两个函数不加修饰器因为要重复调用，减少不必要输出
 
     def getreceivenum(self):
         return self.CANdll.VCI_GetReceiveNum(self.devtype, self.devindex, self.canindex)
