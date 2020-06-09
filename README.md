@@ -80,11 +80,14 @@ del can
  res = can.receive()
  for i in range(res):
      print(can.receivebuf[i])
+     print(can.receivebuf[i].getdata())
  ```
  无需传入参数，此函数的返回值为缓存区内的帧数，如果为0，说明缓存区没有新数据；如果为0xFFFFFFFF，说明有错误；如果为大于0的整数，说明缓存区内有数据，且数据会被存入 ControlCAN 的 receivebuf 这个实例变量中。在主程序中读取此变量即可获得新的数据。receivebuf 是一个 VCI_CAN_OBJ 结构体，其内部的 fields 包含了 CAN 帧的数据。
+调用 VCI_CAN_OBJ 的 getdata 方法可以得到一个 list，元素为 CAN 帧数据，整数。
 ### 发送数据
 ```python
 can.sendbuf[0].ID = 0x123
+can.sendbuf[0].DataLen = 8
 can.sendbuf[0].Data[0] = 0x00
 can.sendbuf[0].Data[1] = 0x11
 can.sendbuf[0].Data[2] = 0x22
@@ -93,5 +96,10 @@ can.sendbuf[0].Data[4] = 0x44
 can.sendbuf[0].Data[5] = 0x55
 can.sendbuf[0].Data[6] = 0x66
 can.sendbuf[0].Data[7] = 0x77
-can.transmit(frame_num=1)
+
+can.sendbuf[1].ID = 0x321
+can.sendbuf[1].setdata([1,2,3,4,5,6,7,8])
+
+can.transmit(frame_num=2)
 ```
+在发送前应设置发送帧的 ID，数据等。 VCI_CAN_OBJ 同样有一个 setdata 方法，可以将传入的 list 分别赋值给 Data ，Datalen自动设定为 list 长度。transmit 方法有一个参数 frame_num，其值为想要发送的帧数，默认为1。
