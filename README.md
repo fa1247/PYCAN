@@ -55,3 +55,43 @@ can.resetcan()
 can.readboardinfo()
 ```
 无需传入参数
+### 获取缓存区帧数
+```python
+can.getreceivenum()
+```
+无需传入参数
+### 读取错误
+```python
+can.readerrinfo()
+```
+无需传入参数
+### 设定 E-U 波特率
+```python
+can.setreference()
+```
+无需传入参数，此函数只在设定 XE-U 型 CAN 卡的波特率时使用，此函数还有其他功能，请参考官方手册
+### 关闭CAN卡
+```python
+del can
+```
+删除实例时会自动调用 __del__ 方法，此方法会关闭 CAN 卡
+### 接收数据
+ ```python
+ res = can.receive()
+ for i in range(res):
+     print(can.receivebuf[i])
+ ```
+ 无需传入参数，此函数的返回值为缓存区内的帧数，如果为0，说明缓存区没有新数据；如果为0xFFFFFFFF，说明有错误；如果为大于0的整数，说明缓存区内有数据，且数据会被存入 ControlCAN 的 receivebuf 这个实例变量中。在主程序中读取此变量即可获得新的数据。receivebuf 是一个 VCI_CAN_OBJ 结构体，其内部的 fields 包含了 CAN 帧的数据。
+### 发送数据
+```python
+can.sendbuf[0].ID = 0x123
+can.sendbuf[0].Data[0] = 0x00
+can.sendbuf[0].Data[1] = 0x11
+can.sendbuf[0].Data[2] = 0x22
+can.sendbuf[0].Data[3] = 0x33
+can.sendbuf[0].Data[4] = 0x44
+can.sendbuf[0].Data[5] = 0x55
+can.sendbuf[0].Data[6] = 0x66
+can.sendbuf[0].Data[7] = 0x77
+can.transmit(frame_num=1)
+```
